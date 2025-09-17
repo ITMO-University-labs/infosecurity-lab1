@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: pwd
+        run: pwd
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
