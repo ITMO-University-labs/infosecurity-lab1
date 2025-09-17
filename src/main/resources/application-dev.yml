@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: lab1
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/treasureBoard
+    username: postgres
+    password: ma826330
+  jpa:
+    show-sql: false
+
+security:
+  jwt:
+    secret_key: kPStaMlBucfBqjyvp95m6IxpTawn/b/NtdQ/tgoR/gbm74CVza0QlRfVumvxvnTU
+  password-salt: Og510pDxh67iiKLn2
