@@ -1,0 +1,28 @@
+name: CI Security Checks
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '24'
+
+      - name: Build with Gradle
+        run: gradle build
+
+      - name: Run SpotBugs (SAST)
+        run: gradle spotbugsMain
+
+      - name: Run OWASP Dependency-Check (SCA)
+        run: gradle dependencyCheckAnalyze
