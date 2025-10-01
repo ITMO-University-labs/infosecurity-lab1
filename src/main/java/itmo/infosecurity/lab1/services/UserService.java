@@ -10,9 +10,9 @@ import itmo.infosecurity.lab1.mappers.UserMapper;
 import itmo.infosecurity.lab1.repositories.RefreshTokenRepository;
 import itmo.infosecurity.lab1.repositories.UserRepository;
 import itmo.infosecurity.lab1.security.JwtService;
-import itmo.infosecurity.lab1.security.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +28,8 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Value("${security.password-salt}")
     private String salt;
@@ -50,7 +52,7 @@ public class UserService {
         if (optionalUser.isPresent())
             throw new UserExistsException("Пользователь с такой почтой уже существует!");
         User user = userMapper.toEntity(userRegistrationDto);
-        user.setPassword(PasswordHasher.hashPassword(user.getPassword(), salt));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return addRefreshToken(userRepository.save(user));
     }
 
@@ -83,7 +85,7 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByEmail(userSignInDto.email());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (PasswordHasher.verifyPassword(userSignInDto.password(), user.getPassword(), salt))
+            if (passwordEncoder.matches(userSignInDto.password(), user.getPassword()))
                 return user;
         }
 
