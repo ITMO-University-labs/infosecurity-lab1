@@ -3,6 +3,7 @@ package itmo.infosecurity.lab1.controllers;
 import itmo.infosecurity.lab1.dto.JwtAccessToken;
 import itmo.infosecurity.lab1.dto.UserDto;
 import itmo.infosecurity.lab1.dto.UserSignInDto;
+import itmo.infosecurity.lab1.exceptions.UserNotFoundException;
 import itmo.infosecurity.lab1.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,24 +31,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> signIn(@RequestBody @Valid UserSignInDto userSignInDto) {
-        try {
-            JwtAccessToken token = userService.signIn(userSignInDto);
-            return ResponseEntity.ok(token);
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Неверный логин или пароль!");
-        }
+    public ResponseEntity<?> signIn(@RequestBody @Valid UserSignInDto userSignInDto) throws UserNotFoundException {
+        JwtAccessToken token = userService.signIn(userSignInDto);
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/refreshToken")
-    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String authHeader) throws AuthenticationException {
+    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String authHeader) throws UserNotFoundException {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
                 return ResponseEntity.ok(userService.refreshToken(authHeader.substring(7)));
             } catch (AuthenticationException e) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Невалидный refresh токен!");
             }
-
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Невалидный access токен!");
     }

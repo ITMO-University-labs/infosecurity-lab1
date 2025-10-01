@@ -3,11 +3,10 @@ package itmo.infosecurity.lab1.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
 public record UserDto(@Email
                       @NotBlank
-                      @Size(max = 255)
+                      @Size(max = 64)
                       String email,
 
                       @NotBlank

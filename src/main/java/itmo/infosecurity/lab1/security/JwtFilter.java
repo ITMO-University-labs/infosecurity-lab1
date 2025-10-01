@@ -20,10 +20,23 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws IOException, ServletException {
-        String token = request.getHeader("Authorization").substring(7);
-        if (!(request.getRequestURI().startsWith("/auth")) && !jwtService.validateJwtToken(token)) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/auth") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger") || path.startsWith("/swagger-ui")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("Access Denied");
+            return;
+        }
+
+        String token = header.substring(7);
+        if (!jwtService.validateJwtToken(token)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Access Denied: Invalid token");
             return;
         }
 

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record UserSignInDto(@Email
                             @NotBlank
-                            @Size(max = 255)
+                            @Size(max = 64)
                             String email,
 
                             @NotBlank

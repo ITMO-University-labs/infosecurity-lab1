@@ -22,6 +22,10 @@ configurations {
     }
 }
 
+spotbugs {
+    excludeFilter = file("src/main/resources/findbugs-exclude.xml")
+}
+
 repositories {
     mavenCentral()
 }
