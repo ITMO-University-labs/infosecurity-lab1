@@ -31,9 +31,6 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Value("${security.password-salt}")
-    private String salt;
-
     public JwtAccessToken addRefreshToken(User user) {
         JwtDto jwtDto = jwtService.generateAuthToken(user.getEmail());
         Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findById(user.getId());

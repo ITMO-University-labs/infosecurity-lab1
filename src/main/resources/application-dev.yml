@@ -13,4 +13,3 @@ spring:
 security:
   jwt:
     secret_key: kPStaMlBucfBqjyvp95m6IxpTawn/b/NtdQ/tgoR/gbm74CVza0QlRfVumvxvnTU
-  password-salt: Og510pDxh67iiKLn2
