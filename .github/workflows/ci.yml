@@ -23,9 +23,15 @@ jobs:
         run: gradle spotbugsMain
       - name: Set up Snyk
         uses: snyk/actions/setup@master
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install snyk-to-html
+        run: npm install -g snyk-to-html
       - name: Run Snyk
         run:  |
-            snyk monitor --json > snyk-report.json
+            snyk test --json > snyk-report.json || true
             snyk-to-html -i snyk-report.json -o snyk-report.html
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
