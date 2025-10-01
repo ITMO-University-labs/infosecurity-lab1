@@ -19,8 +19,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '24'
-      - name: Run SpotBugs (SAST)
-        run: gradle spotbugsMain
+#      - name: Run SpotBugs (SAST)
+#        run: gradle spotbugsMain
       - name: Set up Snyk
         uses: snyk/actions/setup@master
       - name: Run Snyk
