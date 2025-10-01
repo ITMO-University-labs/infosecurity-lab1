@@ -23,7 +23,7 @@ configurations {
 }
 
 spotbugs {
-    excludeFilter = file("src/main/resources/findbugs-exclude.xml")
+    excludeFilter = file("spotbugs/spotbugs-exclude.xml")
 }
 
 repositories {

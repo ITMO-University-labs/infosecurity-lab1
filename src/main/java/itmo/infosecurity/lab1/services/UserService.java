@@ -1,11 +1,10 @@
 package itmo.infosecurity.lab1.services;
 
-import itmo.infosecurity.lab1.dto.JwtAccessToken;
-import itmo.infosecurity.lab1.dto.JwtDto;
-import itmo.infosecurity.lab1.dto.UserDto;
-import itmo.infosecurity.lab1.dto.UserSignInDto;
+import itmo.infosecurity.lab1.dto.*;
 import itmo.infosecurity.lab1.entities.RefreshToken;
 import itmo.infosecurity.lab1.entities.User;
+import itmo.infosecurity.lab1.exceptions.InvalidRefreshTokenException;
+import itmo.infosecurity.lab1.exceptions.UserExistsException;
 import itmo.infosecurity.lab1.exceptions.UserNotFoundException;
 import itmo.infosecurity.lab1.mappers.UserMapper;
 import itmo.infosecurity.lab1.repositories.RefreshTokenRepository;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,9 +25,9 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final UserMapper userMapper;
     private final JwtService jwtService;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${security.password-salt}")
     private String salt;
@@ -47,11 +45,11 @@ public class UserService {
         return new JwtAccessToken(jwtDto.accessToken());
     }
 
-    public JwtAccessToken addUser(UserDto userDto) throws AuthenticationException {
-        Optional<User> optionalUser = userRepository.findByEmail(userDto.email());
+    public JwtAccessToken addUser(UserRegistrationDto userRegistrationDto) throws UserExistsException {
+        Optional<User> optionalUser = userRepository.findByEmail(userRegistrationDto.email());
         if (optionalUser.isPresent())
-            throw new AuthenticationException();
-        User user = userMapper.toEntity(userDto);
+            throw new UserExistsException("Пользователь с такой почтой уже существует!");
+        User user = userMapper.toEntity(userRegistrationDto);
         user.setPassword(PasswordHasher.hashPassword(user.getPassword(), salt));
         return addRefreshToken(userRepository.save(user));
     }
@@ -61,7 +59,7 @@ public class UserService {
         return addRefreshToken(user);
     }
 
-    public JwtAccessToken refreshToken(String token) throws AuthenticationException, UserNotFoundException {
+    public JwtAccessToken refreshToken(String token) throws UserNotFoundException, InvalidRefreshTokenException {
         String email = jwtService.getEmailFromToken(token);
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
@@ -74,7 +72,7 @@ public class UserService {
                     return new JwtAccessToken(jwtService.refreshAuthToken(email));
 
                 refreshTokenRepository.delete(refreshToken);
-                throw new AuthenticationException("Невалидный refresh токен");
+                throw new InvalidRefreshTokenException("Невалидный refresh токен!");
             }
         }
 
@@ -92,7 +90,7 @@ public class UserService {
         throw new UserNotFoundException("Неверный логин или пароль!");
     }
 
-    public List<UserDto> findAll() {
+    public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 

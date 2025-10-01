@@ -22,6 +22,7 @@ jobs:
       - name: Run SpotBugs (SAST)
         run: gradle spotbugsMain
       - name: Run Snyk
+        uses: snyk/actions/setup@master
         run: snyk test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

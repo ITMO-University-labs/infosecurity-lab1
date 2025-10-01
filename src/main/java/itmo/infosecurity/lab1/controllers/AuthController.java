@@ -1,17 +1,16 @@
 package itmo.infosecurity.lab1.controllers;
 
 import itmo.infosecurity.lab1.dto.JwtAccessToken;
-import itmo.infosecurity.lab1.dto.UserDto;
+import itmo.infosecurity.lab1.dto.UserRegistrationDto;
 import itmo.infosecurity.lab1.dto.UserSignInDto;
+import itmo.infosecurity.lab1.exceptions.InvalidRefreshTokenException;
+import itmo.infosecurity.lab1.exceptions.UserExistsException;
 import itmo.infosecurity.lab1.exceptions.UserNotFoundException;
 import itmo.infosecurity.lab1.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.naming.AuthenticationException;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,13 +20,9 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/registration")
-    public ResponseEntity<?> registration(@RequestBody @Valid UserDto userDto) {
-        try {
-            JwtAccessToken token = userService.addUser(userDto);
-            return ResponseEntity.ok(token);
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Пользователь с такой почтой уже существует!");
-        }
+    public ResponseEntity<?> registration(@RequestBody @Valid UserRegistrationDto userRegistrationDto) throws UserExistsException {
+        JwtAccessToken token = userService.addUser(userRegistrationDto);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
@@ -37,14 +32,8 @@ public class AuthController {
     }
 
     @GetMapping("/refreshToken")
-    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String authHeader) throws UserNotFoundException {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            try {
-                return ResponseEntity.ok(userService.refreshToken(authHeader.substring(7)));
-            } catch (AuthenticationException e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Невалидный refresh токен!");
-            }
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Невалидный access токен!");
+    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String authHeader)
+            throws UserNotFoundException, InvalidRefreshTokenException {
+        return ResponseEntity.ok(userService.refreshToken(authHeader.substring(7)));
     }
 }
